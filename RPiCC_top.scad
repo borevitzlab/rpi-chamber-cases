@@ -2,20 +2,22 @@
 // by Ming-Dao Chia
 // for the Borevitz Lab, Australian National University
 
-lid_height = 6;
-rounding = 2; // just for the cable ties
-circle_res = 20;
+// Settings
+lid_height = 6; // Total lid height, not including the little front tab
+rounding = 2; // just for the cable tie slots (less = sharper corners)
+circle_res = 20; // can increase for final export
 
 // just the cover without holes
 module baseCover(){ 
     union(){
     difference(){
-        translate([0,-2,0]) // slight shift for the thicker mounting flap
+        translate([0,-2,0]) // slight shift to fit the thicker mounting flap
         cube([64,95,lid_height]); // if case only, y=93
         translate([2,2,2]) 
             cube([60,89,lid_height]);
     }
-    translate([4,91,3])
+    // front flap helps prevent unwanted sideways movement
+    translate([4,91,lid_height-2]) 
     cube([55.6,2,5]);
     }
 }
@@ -56,12 +58,14 @@ module smallCamera(xpos,ypos){
     screwHole(3,xpos+21,ypos+13);
 }
 
+// fits current temperature/humidity sensor
 module tempHumiditySensor(xpos,ypos){
     screwHole(3, xpos,ypos);
     screwHole(3, xpos,ypos-15);
     screwHole(3,xpos-27,ypos-7.5);
 }
 
+// Generic rounded rectangle module, from the bottom
 module sidePort(x,y, rounding=rounding){
     rotate([0,0,0])
     minkowski()
@@ -71,6 +75,7 @@ module sidePort(x,y, rounding=rounding){
     }
 }
 
+// Holes for cable ties
 module cableTiePort(x,y){
     translate([x,y,-2])
     sidePort(12,4.2);
@@ -78,20 +83,24 @@ module cableTiePort(x,y){
 
 difference(){
     baseCover(); // everything is subtracted from this
+    // Fits RPi screws
     baseMountingHoles();
+    // camera ribbon cable
     cableSlot(10,50,25,2);
     bigCamera(10,14);
     smallCamera(10,24);
     tempHumiditySensor(40,84.5);
-    cableSlot(54,73,6,9); // humidity sensor cable
+    // humidity sensor cable
+    cableSlot(54,73,6,9); 
+    // cable ties to secure top and bottom
     cableTiePort(6,55);
     cableTiePort(58,55);
     rotate([0,0,90])
     cableTiePort(6,-48);
     // allows slot for other side of case
     translate([15,-2.1,-1])
-    cube([26,4.2,10]);
+    cube([26,4.2,lid_height+2]);
 }
 
-// import other half for debugging
+// uncommment to import other half for debugging
 //translate([64,0,37]) rotate([0,180,0]) import("RPiCC_bottom.stl");
